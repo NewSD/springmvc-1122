@@ -119,6 +119,7 @@ public class ItemsController {
     //    批量修改商品信息
     @RequestMapping("/updateItems")
     public String updateItems(ItemsQueryVo itemsQueryVo)throws Exception{
+        //自动封装pojo中的  itemsVoList 属性中
         System.out.println(itemsQueryVo);
         return "success";
     }
