@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.niu.mapper.ItemsMapperCustom" >
+
+  <sql id="query_items_where">
+    <if test="itemsVo != null">
+      <if test="itemsVo.id != null">
+        and items.id = #{itemsVo.id}
+      </if>
+      <if test="itemsVo.name != null">
+        and items.name = #{itemsVo.name}
+      </if>
+    </if>
+  </sql>
+
+  <select id="findItemsList" parameterType="com.niu.vo.ItemsQueryVo" resultType="com.niu.entity.Items" >
+      SELECT * FROM items
+      <where>
+        <include refid="query_items_where"/>
+      </where>
+
+  </select>
+
+
+
+</mapper>

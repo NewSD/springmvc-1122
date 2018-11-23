@@ -1,0 +1,126 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+
+    <!--对静态资源的访问不走前端控制器:rest风格-->
+    <mvc:resources location="/js/" mapping="/js/**"/>
+    <mvc:resources location="/css/" mapping="/css/**"/>
+
+    <!--注解扫描:@Controller-->
+    <context:component-scan base-package="com.niu.controller"/>
+
+
+    <!--注解形式:对@RequsetMapping的方法进行扫描-->
+  <!--  <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter"/>-->
+    <!--或者简写-->
+    <!--自定义类型转化器:pojo类型参数转换-->
+    <mvc:annotation-driven conversion-service="conversionService" validator="validator">
+       <!-- <mvc:argument-resolvers>
+            &lt;!&ndash;实现了空字符串转换为null&ndash;&gt;
+            <bean class="com.niu.controller.converter.EmptyStringToNullModelAttributeMethodProcessor">
+                <constructor-arg name="annotationNotRequired" value="true"/>
+            </bean>
+        </mvc:argument-resolvers>-->
+    </mvc:annotation-driven>
+
+    <!--配置校验器-->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"></property>
+        <property name="validationMessageSource" ref="messageSource"></property>
+    </bean>
+
+    <!-- 校验错误信息配置文件 -->
+    <bean id="messageSource"
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <!-- 资源文件名-->
+        <property name="basenames">
+            <list>
+                <value>classpath:CustomValidationMessages</value>
+            </list>
+        </property>
+        <!-- 资源文件编码格式 -->
+        <property name="fileEncodings" value="utf-8" />
+        <!-- 对资源文件内容缓存时间，单位秒 -->
+        <property name="cacheSeconds" value="120" />
+    </bean>
+
+
+    <bean id="conversionService"
+          class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <!--  自定义转换器   -->
+                <bean class="com.niu.controller.converter.CustomDateConverter"/>
+                <ref bean="employeeConverter"/>
+                <ref bean="emptyStringToNull"/>
+            </set>
+        </property>
+    </bean>
+
+
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 指定视图路径前缀 -->
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <!-- 指定视图路径后缀 -->
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--spring自定义异常处理-->
+    <bean class="com.niu.controller.exceptionResolver.CustomerExceptionResolver"/>
+
+    <!--文件上传-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize">
+            <value>5242880</value>
+        </property>
+    </bean>
+
+    <!--响应json数据:使用注解不用配-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
+            </list>
+        </property>
+    </bean>
+    
+    
+    <!--拦截器配置-->
+   <!-- <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.niu.controller.interceptor.HandlerInterceptor1"></bean>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.niu.controller.interceptor.HandlerInterceptor2"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+-->
+
+    <!--登录用户拦截器-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <bean class="com.niu.controller.interceptor.LoginHandlerInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+</beans>
